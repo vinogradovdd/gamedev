@@ -183,7 +183,7 @@ class Rabbit(pygame.sprite.Sprite):
         self.width = TILESIZE
         self.height = TILESIZE
 
-        self.image = pygame.Surface([self.width/2, self.height/2])
+        self.image = pygame.Surface([self.width / 2, self.height / 2])
         self.image.fill(BLUE)
         self.rect = self.image.get_rect()
         self.rect.x = self.x
@@ -196,8 +196,8 @@ class Rabbit(pygame.sprite.Sprite):
         self.last_target = 0
 
     def flee(self, target):
-        steer = vec(0,0)
-        self.desired = vec(0,0)
+        steer = vec(0, 0)
+        self.desired = vec(0, 0)
         dist = self.pos - target
         if FLEE_RADIUS_RABBIT > dist.length() > 0:
             self.desired = dist.normalize() * RABBIT_SPEED
@@ -205,7 +205,6 @@ class Rabbit(pygame.sprite.Sprite):
             if steer.length() > MAX_FORCE_RABBIT:
                 steer.scale_to_length(MAX_FORCE_RABBIT)
         return steer
-
 
     def seek(self, target):
         self.desired = (target - self.pos).normalize() * RABBIT_SPEED
@@ -259,9 +258,8 @@ class Rabbit(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
 
-
 class Doe(pygame.sprite.Sprite):
-    def __init__(self, game, x, y, tag,  group_tag, lead = None):
+    def __init__(self, game, x, y, tag, group_tag, lead=None):
         self.game = game
         self._layer = ENEMY_LAYER
         self.groups = self.game.all_sprites, self.game.peacefull
@@ -274,7 +272,7 @@ class Doe(pygame.sprite.Sprite):
         self.height = TILESIZE
         self.tag = tag
         self.group_tag = group_tag
-        self.image = pygame.Surface([self.width/2, self.height/2])
+        self.image = pygame.Surface([self.width / 2, self.height / 2])
         self.image.fill(YELLOW)
         self.rect = self.image.get_rect()
         self.rect.x = self.x
@@ -288,16 +286,15 @@ class Doe(pygame.sprite.Sprite):
         self.last_target = 0
 
     def flee(self, target):
-        steer = vec(0,0)
-        self.desired = vec(0,0)
+        steer = vec(0, 0)
+        self.desired = vec(0, 0)
         dist = self.pos - target
-        if 0 < dist.length() < FLEE_RADIUS_DOE :
+        if 0 < dist.length() < FLEE_RADIUS_DOE:
             self.desired = dist.normalize() * DOE_SPEED
             steer = self.desired - self.vel
             if steer.length() > MAX_FORCE_DOE:
                 steer.scale_to_length(MAX_FORCE_DOE)
         return steer
-
 
     def seek(self, target):
         self.desired = (target - self.pos).normalize() * DOE_SPEED
@@ -352,7 +349,6 @@ class Doe(pygame.sprite.Sprite):
         self.rect.center = self.pos
 
 
-
 class Wolf(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
         self.game = game
@@ -366,11 +362,13 @@ class Wolf(pygame.sprite.Sprite):
         self.width = TILESIZE
         self.height = TILESIZE
 
-        self.image = pygame.Surface([self.width/2, self.height/2])
+        self.image = pygame.Surface([self.width / 2, self.height / 2])
         self.image.fill(BLACK)
         self.rect = self.image.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
+        self.nearest = 10000
+        self.nearest_sprite = None
         self.pos = vec(self.rect.x, self.rect.y)
         self.vel = vec(WOLF_SPEED, 0).rotate(uniform(0, 360))
         self.acc = vec(0, 0)
@@ -378,6 +376,12 @@ class Wolf(pygame.sprite.Sprite):
         self.target = vec(randint(0, WIN_WIDTH), randint(0, WIN_HEIGHT))
         self.last_target = 0
 
+    def wander(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_target > 500:
+            self.last_target = now
+            self.target = vec(randint(0, WIN_WIDTH), randint(0, WIN_HEIGHT))
+        return self.seek(self.target)
 
     def seek(self, target):
         self.desired = (target - self.pos).normalize() * WOLF_SPEED
@@ -386,20 +390,25 @@ class Wolf(pygame.sprite.Sprite):
             steer.scale_to_length(MAX_FORCE_WOLF)
         return steer
 
-
     def collide(self):
         hits_e = pygame.sprite.spritecollide(self, self.game.peacefull, True)
 
     def update(self):
+        self.acc = self.wander()
+        self.vel += self.acc
+        self.nearest = 10000
+        self.nearest_sprite = None
         for sprite in self.game.peacefull:
-            if (self.pos - sprite.rect.center).length() < MAX_SEEK_RADIUS_WOLF:
-                self.acc = self.seek(sprite.rect.center)
+            if (self.pos - sprite.rect.center).length() < self.nearest:
+                self.nearest = (self.pos - sprite.rect.center).length()
+                self.nearest_sprite = sprite
+            if 0 < self.nearest < 10000 and self.nearest_sprite is not None:
+                self.acc = self.seek(self.nearest_sprite.rect.center)
                 self.vel = self.acc
-                if self.vel.length() > WOLF_SPEED:
-                    self.vel.scale_to_length(WOLF_SPEED)
-                self.collide()
-                self.pos += self.vel
-
+        if self.vel.length() > WOLF_SPEED:
+            self.vel.scale_to_length(WOLF_SPEED)
+        self.collide()
+        self.pos += self.vel
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_a]:
@@ -415,7 +424,6 @@ class Wolf(pygame.sprite.Sprite):
             if not self.game.player.collide_y:
                 self.pos.y -= PLAYER_SPEED
         self.rect.center = self.pos
-
 
 
 class Block(pygame.sprite.Sprite):
@@ -531,7 +539,7 @@ class Attack(pygame.sprite.Sprite):
 
     def collide(self):
         hits = pygame.sprite.spritecollide(self, self.game.enemies, True)
-        hits_p = pygame.sprite.spritecollide(self,self.game.peacefull, True)
+        hits_p = pygame.sprite.spritecollide(self, self.game.peacefull, True)
         hits_blocks = pygame.sprite.spritecollide(self, self.game.blocks, False)
         if hits_blocks:
             self.kill()

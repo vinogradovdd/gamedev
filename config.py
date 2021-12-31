@@ -16,7 +16,7 @@ YELLOW = (255, 255, 254)
 
 RABBIT_SPEED = 1
 DOE_SPEED = 5
-WOLF_SPEED = 4
+WOLF_SPEED = 3
 BULLET_SPEED = 7
 PLAYER_SPEED = 4
 
@@ -26,13 +26,13 @@ FLEE_RADIUS_RABBIT = 0.01
 MAX_FORCE_DOE = 0.2
 FLEE_RADIUS_DOE = 0.03
 
-MAX_FORCE_WOLF = 0.1
+MAX_FORCE_WOLF = 0.6
 MAX_SEEK_RADIUS_WOLF = 500
 
 tilemap = [
 
     'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB',
-    'B..........E....................W.......B',
+    'B...............................W.......B',
     'B.......................................B',
     'B.......................................B',
     'B........L..M..............E............B',
