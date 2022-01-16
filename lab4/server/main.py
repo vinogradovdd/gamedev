@@ -47,6 +47,10 @@ class Game:
                 Ground(self, j, i)
                 if column == "B":
                     Block(self, j, i)
+                if column == "S":
+                    Bullet_package(self, j, i)
+                if column == "H":
+                    Health_package(self, j, i)
                 if column == "E":
                     self.enemy = Enemy(self, j, i)
                 if column == "P":
