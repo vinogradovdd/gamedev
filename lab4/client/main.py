@@ -47,10 +47,6 @@ class Game:
                 Ground(self, j, i)
                 if column == "B":
                     Block(self, j, i)
-                if column == "S":
-                    Block(self, j, i)
-                if column == "H":
-                    Block(self, j, i)
                 if column == "E":
                     self.enemy = Enemy(self, j, i)
                 if column == "M":
